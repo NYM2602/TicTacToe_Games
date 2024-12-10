@@ -583,6 +583,193 @@ void Word_XO_RandomPlayer<T>::getmove(int& x, int& y) {
 
 //Game 6
 
+template <typename T>
+class Misere_board : public Board<T> {
+private:
+    int player1_counter=1;
+    int player2_counter=1;
+    bool flag=false;
+public:
+    Misere_board();
+    bool update_board(int x, int y, T symbol) override;
+    void display_board() override;
+    bool is_win() override;
+    bool is_draw() override;
+    bool game_is_over()override;
+    int count(T symbol);      // counts number of wins
+
+};
+template <typename T>
+class Misere_Player:public Player<T> {
+public:
+    Misere_Player(string name ,T symbol);
+    void getmove(int& x, int& y);
+
+};
+
+template <typename T>
+class Misere_Random_Player : public RandomPlayer<T> {
+public:
+    Misere_Random_Player (T symbol);
+    void getmove(int &x, int &y) ;
+};
+
+//=============================================================================
+//                               IMPLEMENTATION
+//=============================================================================
+
+
+template <typename T>
+Misere_board<T>::Misere_board() {   //constructor of the FiveXFive_Board class (makes the board empty)
+    this->rows = 3;    // the size of the board 3x3
+    this->columns = 3;
+    this->board = new char*[this->rows];
+    // loops on whole board to make it empty make all the cells empty
+    for (int i = 0; i < this->rows; i++) {
+        this->board[i] = new char[this->columns];
+        for (int j = 0; j < this->columns; j++) {
+            this->board[i][j] = '-';
+        }
+    }
+    //number of moves=0
+    this->n_moves = 0;
+}
+template <typename T>
+bool Misere_board<T>::update_board(int x, int y, T symbol) {
+    // Only update if move is valid
+    if (!(x < 0|| x >= this->rows|| y <0|| y >= this->columns) && (this->board[x][y] == '-'|| symbol == '-')) {
+        if (symbol == '-'){
+            this->n_moves--;
+            this->board[x][y] = 0;
+        }
+        else {
+            this->n_moves++;
+            this->board[x][y] = toupper(symbol);
+        }
+        return true;
+    }
+    return false;
+}
+
+template <typename T>
+void Misere_board<T>::display_board(){
+    for (int i = 0; i < this->rows; i++) {
+        cout << "\n|| ";
+        for (int j = 0; j < this->columns; j++) {
+            cout << "(" << i << "," << j << ")";
+            cout << setw(2) << this->board[i][j] << " ||";
+        }
+        cout << "\n=======================================";
+    }
+    cout << endl;
+}
+template <typename T>
+int Misere_board<T>::count(T symbol) {
+    int count = 1;
+    // Check each row for 3-in-a-row
+    for (int i = 0; i < this->rows; i++) {
+        for (int j = 0; j <= this->columns - 3; j++) {
+            if (this->board[i][j] == symbol && this->board[i][j+1] == symbol && this->board[i][j+2] == symbol) {
+                count--;
+                break;
+            }
+        }
+    }
+    // Check each column for 3-in-a-column
+    for (int i = 0; i <= this->rows - 3; i++) {
+        for (int j = 0; j < this->columns; j++) {
+            if (this->board[i][j] == symbol && this->board[i+1][j] == symbol && this->board[i+2][j] == symbol) {
+                count--;
+                break;
+            }
+        }
+    }
+
+    // Check diagonals (left to right)
+    for (int i = 0; i <= this->rows - 3; i++) {
+        for (int j = 0; j <= this->columns - 3; j++) {
+            if (this->board[i][j] == symbol && this->board[i+1][j+1] == symbol && this->board[i+2][j+2] == symbol) {
+                count--;
+                break;
+            }
+        }
+    }
+    // Check diagonals (right to left)
+    for (int i = 0; i <= this->rows - 3; i++) {
+        for (int j = this->columns - 1; j >= 2; j--) {
+            if (this->board[i][j] == symbol && this->board[i+1][j-1] == symbol && this->board[i+2][j-2] == symbol) {
+                count--;
+                break;
+            }
+        }
+    }
+    return count;
+}
+
+template <typename T>
+bool Misere_board<T>::game_is_over() {   //game is over when the game is win or draw
+    if (is_win()||is_draw()) {
+        return true;
+    }
+    return false;
+}
+
+template <typename T>
+bool Misere_board<T>::is_win() {
+    if (flag==true){
+        return true;
+    }
+    player1_counter = count('X');
+    player2_counter = count('O');
+    if (player1_counter == 1&&player2_counter != 1) {
+        flag = true;
+        return false;
+    }
+    if (player2_counter == 1 && player1_counter != 1) {
+        flag = true;
+        return false;
+    }
+    return false;
+}
+
+template <typename T>
+bool Misere_board<T>::is_draw() {
+// Checking if all the cells are filled
+    if (this->n_moves == this->rows * this->columns) {
+        return !is_win(); // game is draw if no win
+    }
+    return false;
+}
+
+//================================================================
+//                      PLAYERS IMPLEMENTATION
+//================================================================
+
+template <typename T>
+Misere_Player<T>::Misere_Player(string name, T symbol) : Player<T>(name, symbol)  {}
+
+template <typename T>
+void Misere_Player<T>::getmove(int& x, int& y) {
+    cout << "\nPlease enter your move x and y (0 to 2) separated by spaces: ";
+    cin >> x >> y;
+}
+
+//================================================================
+//                     RANDOM  PLAYERS IMPLEMENTATION
+//================================================================
+
+template <typename T>
+Misere_Random_Player<T>::Misere_Random_Player(T symbol) : Player<T>(symbol) {
+    this->dimension =3;
+    this->name = "Random Computer Player";
+    srand(static_cast<unsigned int>(time(0)));  // Speeds the random number generator
+}
+
+template <typename T>
+void Misere_Random_Player<T>::getmove(int& x, int& y) {
+    cout << "\nPlease enter your move x and y (0 to 2) separated by spaces: ";
+    cin >> x >> y;
+}
 
 
 //Game 8
