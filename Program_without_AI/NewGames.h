@@ -213,7 +213,174 @@ void Pyr_XO_RandomPlayer<T>::getmove(int& x, int& y) {
 
 //Game 3
 
+template <typename T>
+class FiveXFive_Board : public Board<T> {
+private:
+    int t_moves=0;
+    bool winner=false;
+    int player1_scr = 0;
+    int player2_scr = 0;
+public:
+    FiveXFive_Board();
+    bool update_board(int x, int y, T symbol);
+    void display_board();
+    bool is_win();
+    bool is_draw();
+    bool game_is_over();
+    int count_three(T symbol);  // additional func for counting each three in a row, column or diagonal
+};
 
+template <typename T>
+class FiveXFive_Player : public Player<T> {
+public:
+    FiveXFive_Player(std::string name, T symbol);
+    void getmove(int& x, int& y);
+};
+
+template <typename T>
+class FiveXFive_Random_Player:public RandomPlayer<T> {
+public:
+    FiveXFive_Random_Player(T symbol);
+    void getmove(int& x, int& y);
+};
+
+
+//=============================================================================
+//                               IMPLEMENTATION
+//=============================================================================
+
+
+template <typename T>
+FiveXFive_Board<T>::FiveXFive_Board() {    //constructor of the FiveXFive_Board class (makes the board empty)
+    this->rows = this->columns = 5;  // the size of the board 5x5
+    this->board = new char*[this->rows];
+    // loops on whole board to make it empty make all the cells empty
+    for (int i = 0; i < this->rows; i++) {
+        this->board[i] = new char[this->columns];
+        for (int j = 0; j < this->columns; j++) {
+            this->board[i][j] = 0;
+        }
+    }
+    //number of moves and total moves are zero
+    this->n_moves = 0;
+    t_moves=0;
+}
+
+template <typename T>
+void FiveXFive_Board<T>::display_board() {
+    for (int i = 0; i < this->rows; i++) {
+        cout << "\n|| ";
+        for (int j = 0; j < this->columns; j++) {
+            cout << "(" << i << "," << j << ")";
+            cout << setw(2) << this->board[i][j] << " ||";
+        }
+        cout << "\n=======================================";
+    }
+    cout << endl;
+}
+
+template <typename T>
+bool FiveXFive_Board<T>::update_board(int x, int y, T symbol) {
+    //if the move is valid place the symbol in the position and increment the counter
+    if (!(x < 0||x >= this->rows||y < 0||y>=this->columns) && this->board[x][y] == 0) {
+        this->board[x][y] = toupper(symbol);
+        this->n_moves++;
+        t_moves++;
+        return true;
+    }
+    return false;
+}
+
+// func that counts each three (vertical ,horizontal ,diagonal)
+template <typename T>
+int FiveXFive_Board<T>::count_three(T symbol) {
+    int count = 0;
+
+    for (int i = 0; i < this->rows; i++) {      //check each three in a row and increment hte counter
+        for (int j = 0;j<=this->columns-3; j++) {
+            if (this->board[i][j] == symbol && this->board[i][j+1] == symbol && this->board[i][j+2] == symbol) {
+                count++;}
+        }
+    }
+    for (int i=0;i<=this->rows-3;i++){     //check each three in a column and increment hte counter
+        for(int j=0;j< this->columns;j++){
+            if (this->board[i][j]==symbol && this->board[i+1][j]==symbol && this->board[i+2][j]==symbol){
+                count++;
+            }
+        }
+    }
+    for (int i=0;i<=this->rows-3 ;i++){     //checks each three diagonally (left)
+        for(int j=0;j<=this->columns-3 ;j++){
+            if (this->board[i][j]==symbol && this->board[i+1][j+1]==symbol && this->board[i+2][j+2]==symbol){
+                count++;
+            }
+        }
+    }
+    for (int i=0;i<=this->rows-3 ;i++){     //checks each three diagonally (right)
+        for(int j=0;j<=this->columns-3 ;j++){
+            if (this->board[i][j]==symbol && this->board[i+1][j-1]==symbol && this->board[i+2][j-2]==symbol){
+                count++;
+            }
+        }
+    }
+    return count;}
+
+
+template <typename T>   // Check if the game is a draw
+bool FiveXFive_Board<T>::is_draw() {
+    //condition when game is draw
+    return (this->n_moves == 24 && player1_scr==player2_scr);
+}
+
+template <typename T>  //check the winner
+bool FiveXFive_Board<T>::is_win() {
+    if(!winner &&t_moves==24){
+        player1_scr=count_three('X');
+        player2_scr=count_three('O');
+        winner=true;
+    }
+    return (player1_scr > player2_scr)||(player2_scr>player1_scr);
+}
+
+template <typename T>  // Check whether the game is over or not
+bool FiveXFive_Board<T>::game_is_over() {
+    return !(is_win()) &&!(is_draw());
+}
+
+//================================================================
+//                      PLAYERS IMPLEMENTATION
+//================================================================
+
+
+template <typename T>
+FiveXFive_Player<T>::FiveXFive_Player(std::string name, T symbol) : Player<T>(name, symbol) {}
+
+// Get the player's move
+template <typename T>
+void FiveXFive_Player<T>::getmove(int& x, int& y) {
+    cout << "\nPlease enter your move x and y (0 to 4) separated by spaces: ";
+    cin >> x >> y;
+}
+
+//================================================================
+//                     RANDOM  PLAYERS IMPLEMENTATION
+//================================================================
+
+
+
+// Constructor for FiveByFive_Random_Player
+template <typename T>
+FiveXFive_Random_Player<T>::FiveXFive_Random_Player(T symbol) : RandomPlayer<T>(symbol) {
+    this->dimension = 5;  // Dimension for random move generation
+    srand(static_cast<unsigned int>(time(0)));  // Seed random generator
+}
+
+// Generate a random move
+template <typename T>
+void FiveXFive_Random_Player<T>::getmove(int& x, int& y) {
+    x = rand() %5;
+    y = rand() %5;
+}
 
 
 //Game 4
@@ -415,8 +582,6 @@ void Word_XO_RandomPlayer<T>::getmove(int& x, int& y) {
 
 
 //Game 6
-
-
 
 
 
