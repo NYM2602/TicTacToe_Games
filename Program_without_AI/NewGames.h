@@ -774,7 +774,132 @@ void Misere_Random_Player<T>::getmove(int& x, int& y) {
 
 //Game 8
 
+template <typename T>
+class UltimateBoard : public Board<T> {
+private:
+    bool is_smallB_win[3][3];  // tracks if any of the small boards is_win
+public:
+    UltimateBoard();
+    bool update_board(int x, int y, T symbol) override;
+    void display_board() override;
+    bool is_win() override;
+    bool is_draw() override;
+    bool game_is_over() override;
+};
 
+template <typename T>
+class UltimatePlayer : public Player<T> {
+public:
+    UltimatePlayer(string name, T symbol);
+    void getmove(int& x, int& y) override;
+};
+
+template <typename T>
+class UltimateRandomPlayer : public RandomPlayer<T> {
+public:
+    UltimateRandomPlayer(T symbol);
+    void getmove(int& x, int& y) override;
+};
+
+//=============================================================================
+//                               IMPLEMENTATION
+//=============================================================================
+
+template <typename T>
+UltimateBoard<T>::UltimateBoard() {
+    this->rows =9;  // size of ultimate board is 9x9
+    this->columns =9;
+    this->board=new T*[this->rows];
+// loops on whole board to make it empty make all the cells empty
+    for (int i = 0; i < this->rows; i++) {
+        this->board[i] = new T[this->columns];
+        for (int j = 0; j < this->columns; j++) {
+            this->board[i][j] = '-';
+        }
+    }
+    //loops on the small board making its status false
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            is_smallB_win[i][j] = false;   //no wins yet
+        }
+    }
+    this->n_moves = 0;
+}
+
+template <typename T>
+bool UltimateBoard<T>::update_board(int x, int y, T symbol) {
+    int smallB_row = x/3;  // get the row num in the small board
+    int smallB_col = y/3;  // get the column num in the small board
+    
+    //if the small board is win,the move isnt valid
+    if(is_smallB_win[smallB_row][smallB_col]) {
+        return false;
+    }
+    if (this->board[x][y] == '-') {  // placing the symbol if the position is empty
+        this->board[x][y] = symbol;
+        this->n_moves++;    // increment the moves
+        return true;
+    }
+    return false;
+}
+
+template <typename T>
+void UltimateBoard<T>::display_board() {
+    for (int i = 0; i < 9; i++){
+        for (int j = 0; j < 9; j++){
+            cout<< "(" <<i<< "," <<j<< ")";
+            cout<< setw(1) << this->board[i][j]<<" ";
+            if ((j + 1)%3==0){
+                cout << " * "; // Separate each small board by stars
+            }
+        }
+        cout<<endl;
+        if ((i + 1)%3==0){  //seprating each 3 rows
+            cout << "***********************************************************************\n";
+        }
+    }
+    cout<<endl;
+}
+
+template <typename T>
+bool UltimateBoard<T>::is_draw() {
+    // game is draw if no win
+    if (this->n_moves == this->rows * this->columns) {
+        return !is_win();
+    }
+    return false;
+}
+
+template <typename T>
+bool UltimateBoard<T>::game_is_over() {
+    return is_win() || is_draw();
+}
+
+//================================================================
+//                      PLAYER IMPLEMENTATION
+//================================================================
+
+template <typename T>
+UltimatePlayer<T>::UltimatePlayer(string name, T symbol) : Player<T>(name, symbol) {}
+
+template <typename T>
+void UltimatePlayer<T>::getmove(int& x, int& y) {
+    cout << "\nPlease enter your move (x and y) separated by spaces (0 to 8): ";
+    cin >> x >> y;
+}
+
+//================================================================
+//                     RANDOM PLAYER IMPLEMENTATION
+//================================================================
+
+template <typename T>
+UltimateRandomPlayer<T>::UltimateRandomPlayer(T symbol) : RandomPlayer<T>(symbol) {}
+
+template <typename T>
+void UltimateRandomPlayer<T>::getmove(int& x, int& y) {
+        x = rand() % 9;  // Random number between 0 and 8
+        y = rand() % 9;
+}
 
 
 //Game 9
