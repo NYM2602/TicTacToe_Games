@@ -767,8 +767,8 @@ Misere_Random_Player<T>::Misere_Random_Player(T symbol) : Player<T>(symbol) {
 
 template <typename T>
 void Misere_Random_Player<T>::getmove(int& x, int& y) {
-    cout << "\nPlease enter your move x and y (0 to 2) separated by spaces: ";
-    cin >> x >> y;
+    x = rand() % 3;  // Random number between 0 and 2
+    y = rand() % 3;
 }
 
 
