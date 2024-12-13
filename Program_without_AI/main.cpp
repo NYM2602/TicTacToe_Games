@@ -64,7 +64,7 @@ int main() {
             p2_type = ask_for_plyr_type("the second player"); // ask if human or random
             
             if (p2_type == '1') {   //if it is a human player then ask for name
-                p1_name = ask_for_name("the second player");
+                p2_name = ask_for_name("the second player");
             }
             
             if (p1_smbl == 'X') { //set the symbol of player 2 to the opposite of player 1
@@ -78,20 +78,16 @@ int main() {
             //player 1
             if (p1_type == '1') {
                 players[0] = new Pyr_XO_Player<char>(p1_name, p1_smbl);
-                cout << "initialized player 1 as human" << endl;
             }
             else {
                 players[0] = new Pyr_XO_RandomPlayer<char>(p1_smbl);
-                cout << "initialized player 1 as random" << endl;
             }
             //player 2
             if (p2_type == '1') {
                 players[1] = new Pyr_XO_Player<char>(p2_name, p2_smbl);
-                cout << "initialized player 2 as human" << endl;
             }
             else {
                 players[1] = new Pyr_XO_RandomPlayer<char>(p2_smbl);
-                cout << "initialized player 2 as random" << endl;
             }
 
             // set board for players
@@ -116,8 +112,56 @@ int main() {
             continue;
         }
 
-        else if (game == '4') {
-            continue;
+        else if (game == '4') { // Word Tic-Tac-Toe
+            Player<char>* players[2];
+            Word_XO_Board<char>* board = new Word_XO_Board<char>();
+            string p1_name, p2_name;
+            char p1_type, p2_type;
+
+            //setup player 1
+            p1_type = ask_for_plyr_type("the first player"); // ask if human or random
+            
+            if (p1_type == '1') {   //if it is a human player then ask for name
+                p1_name = ask_for_name("the first player");
+            }
+            
+            
+            //set up player 2
+            
+            p2_type = ask_for_plyr_type("the second player"); // ask if human or random
+            
+            if (p2_type == '1') {   //if it is a human player then ask for name
+                p2_name = ask_for_name("the second player");
+            }
+            
+
+            //initialize players
+            //player 1
+            if (p1_type == '1') {
+                players[0] = new Word_XO_Player<char>(p1_name, 'A');
+            }
+            else {
+                players[0] = new Word_XO_RandomPlayer<char>('A');
+            }
+            //player 2
+            if (p2_type == '1') {
+                players[1] = new Word_XO_Player<char>(p2_name, 'B');
+            }
+            else {
+                players[1] = new Word_XO_RandomPlayer<char>('B');
+            }
+
+            // set board for players
+            players[0]->setBoard(board);
+            players[1]->setBoard(board);
+
+            //initialize game manager
+            GameManager<char> Word_XO_Game(board, players);
+            Word_XO_Game.run();
+
+            delete board;
+            delete players[0];
+            delete players[1];
         }
 
         else if (game == '5') {
@@ -132,8 +176,65 @@ int main() {
             continue;
         }
 
-        else if (game == '8') {
-            continue;
+        else if (game == '8') { // SUS
+            Player<char>* players[2];
+            SUS_XO_Board<char>* board = new SUS_XO_Board<char>();
+            string p1_name, p2_name;
+            char p1_type, p2_type, p1_smbl, p2_smbl;
+
+
+            //setup player 1
+            p1_type = ask_for_plyr_type("the first player"); // ask if human or random
+            
+            if (p1_type == '1') {   //if it is a human player then ask for name
+                p1_name = ask_for_name("the first player");
+            }
+            
+            p1_smbl = ask_for_symbol("Please enter the symbol of the first player (S or U): ", 8);
+            
+            
+            //set up player 2
+            
+            p2_type = ask_for_plyr_type("the second player"); // ask if human or random
+            
+            if (p2_type == '1') {   //if it is a human player then ask for name
+                p2_name = ask_for_name("the second player");
+            }
+            
+            if (p1_smbl == 'S') { //set the symbol of player 2 to the opposite of player 1
+                p2_smbl = 'U';
+            }
+            else {
+                p2_smbl = 'S';
+            } 
+
+            //initialize players
+            //player 1
+            if (p1_type == '1') {
+                players[0] = new SUS_XO_Player<char>(p1_name, p1_smbl);
+            }
+            else {
+                players[0] = new SUS_XO_RandomPlayer<char>(p1_smbl);
+            }
+            //player 2
+            if (p2_type == '1') {
+                players[1] = new SUS_XO_Player<char>(p2_name, p2_smbl);
+            }
+            else {
+                players[1] = new SUS_XO_RandomPlayer<char>(p2_smbl);
+            }
+
+            // set board for players
+            players[0]->setBoard(board);
+            players[1]->setBoard(board);
+
+            //initialize game manager
+            GameManager<char> SUS_XO_Game(board, players);
+            SUS_XO_Game.run();
+
+            delete board;
+            delete players[0];
+            delete players[1];
         }
         // Exit the program
         else if (game == '0') {
@@ -186,6 +287,12 @@ char ask_for_symbol(string prompt, int gamenum) {
 
         if (gamenum == 1) { //games that use X and O
             if (smbl == 'X' || smbl == 'O') {
+                return smbl;
+            }
+            cout << "This is not a valid symbol" << endl;
+        }
+        else if (gamenum == 8) {
+            if (smbl == 'S' || smbl == 'U') {
                 return smbl;
             }
             cout << "This is not a valid symbol" << endl;

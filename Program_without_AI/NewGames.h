@@ -919,6 +919,7 @@ public:
     bool is_win() ;
     bool is_draw();
     bool game_is_over();
+    int get_n_moves();
 };
 
 
@@ -1075,6 +1076,12 @@ bool SUS_XO_Board<T>::game_is_over() {
     return is_win() || is_draw();
 }
 
+// Get the number of moves from the board
+template <typename T>
+int SUS_XO_Board<T>::get_n_moves() {
+    return this->n_moves;
+}
+
 //------------------------------------------
 
 //SUS_XO_Player Functions
@@ -1087,7 +1094,7 @@ SUS_XO_Player<T>::SUS_XO_Player(string name, T symbol) : Player<T>(name, symbol)
 //Function to get next move
 template <typename T>
 void SUS_XO_Player<T>::getmove(int& x, int& y) {
-    if (this->boardPtr->n_moves == 9) {
+    if (static_cast<SUS_XO_Board<T>*>(this->boardPtr)->get_n_moves() == 9) {
         x = -1;
         y = -1;
     }
@@ -1121,7 +1128,7 @@ template <typename T>
 void SUS_XO_RandomPlayer<T>::getmove(int& x, int& y) {
     x = rand() % this->dimension;  // Random number between 0 and 2
     y = rand() % (this->dimension);
-    if (this->boardPtr->n_moves == 9) { // in case the last player was not the winner
+    if (static_cast<SUS_XO_Board<T>*>(this->boardPtr)->get_n_moves() == 9) { // in case the last player was not the winner
         x = -1;
         y = -1;
     }
