@@ -61,16 +61,16 @@ Pyr_XO_Board<T>::Pyr_XO_Board() {
 
 //Update move with the new move
 template <typename T>
-bool Pyr_XO_Board<T>::update_board(int x, int y, T mark) {
+bool Pyr_XO_Board<T>::update_board(int x, int y, T symbol) {
     // Only update if move is valid
-    if (!(x < 0 || x >= this->rows || y < 0 || y >= this->columns) && (this->board[x][y] == 0|| mark == 0)) {
-        if (mark == 0){
+    if (!(x < 0 || x >= this->rows || y < 0 || y >= this->columns) && (this->board[x][y] == 0|| symbol == 0)) {
+        if (symbol == 0){
             this->n_moves--;
             this->board[x][y] = 0;
         }
         else {
             this->n_moves++;
-            this->board[x][y] = toupper(mark);
+            this->board[x][y] = toupper(symbol);
         }
 
         return true;
@@ -442,16 +442,16 @@ Word_XO_Board<T>::Word_XO_Board() {
 
 //Update move with the new move
 template <typename T>
-bool Word_XO_Board<T>::update_board(int x, int y, T mark) {
+bool Word_XO_Board<T>::update_board(int x, int y, T symbol) {
     // Only update if move is valid
-    if (!(x < 0 || x >= this->rows || y < 0 || y >= this->columns) && (this->board[x][y] == 0|| mark == 0)) {
-        if (mark == 0){
+    if (!(x < 0 || x >= this->rows || y < 0 || y >= this->columns) && (this->board[x][y] == 0|| symbol == 0)) {
+        if (symbol == 0){
             this->n_moves--;
             this->board[x][y] = 0;
         }
         else {
             this->n_moves++;
-            this->board[x][y] = toupper(mark);
+            this->board[x][y] = toupper(symbol);
         }
 
         return true;
@@ -535,6 +535,7 @@ void Word_XO_Player<T>::getmove(int& x, int& y) {
     while (true) {
         cout << "\nPlease enter the letter you want to add to the board: ";
         cin>>smbl;
+        smbl = toupper(smbl);
         if (isalpha(smbl)) {
             symbol = smbl;
             break;
@@ -903,6 +904,228 @@ void UltimateRandomPlayer<T>::getmove(int& x, int& y) {
 
 
 //Game 9
+
+template <typename T>
+class SUS_XO_Board : public Board<T> {
+    int U_wins;//number of SUS sequences completd by each player
+    int S_wins;
+    char winner;
+    char last; // symbol of the last player
+public:
+    SUS_XO_Board();
+    bool update_board (int x , int y , T symbol);
+    void display_board () ;
+    bool complete_SUS(int x, int y);
+    bool is_win() ;
+    bool is_draw();
+    bool game_is_over();
+};
+
+
+template <typename T>
+class SUS_XO_Player : public Player<T> {
+public:
+    SUS_XO_Player (string name, T symbol);
+    void getmove(int& x, int& y) ;
+
+};
+
+template <typename T>
+class SUS_XO_RandomPlayer : public RandomPlayer<T>{
+public:
+    SUS_XO_RandomPlayer (T symbol);
+    void getmove(int &x, int &y) ;
+};
+
+
+
+//---------------------------------------Implementation
+
+//SUS_XO_Board Functions
+
+//Constructor for the board
+template <typename T>
+SUS_XO_Board<T>::SUS_XO_Board() {
+    //initialize board
+    this->rows = this->columns = 3;
+    this->board = new char*[this->rows];
+    for (int i = 0; i < this->rows; i++) {
+        this->board[i] = new char[this->columns];
+        for (int j = 0; j < this->columns; j++) {
+            this->board[i][j] = 0;
+        }
+    }
+    this->U_wins = 0;
+    this->S_wins = 0;
+    this->winner = 0;
+    this->n_moves = 0;
+}
+
+//Update move with the new move
+template <typename T>
+bool SUS_XO_Board<T>::update_board(int x, int y, T symbol) {
+    // in case the last player is not the winner we increase the move count only to indicate this edge case
+    if (x == -1 && y == -1) {
+        n_moves++;
+        return true;
+    }
+    // Only update if move is valid
+    if (!(x < 0 || x >= this->rows || y < 0 || y >= this->columns) && (this->board[x][y] == 0 || symbol == 0)) {
+        if (symbol == 0){
+            this->n_moves--;
+            this->board[x][y] = 0;
+        }
+        else {
+            this->n_moves++;
+            this->board[x][y] = toupper(symbol);
+            this->last = toupper(symbol);
+            if (complete_SUS(x, y)){
+                if (symbol == 'U'){
+                    U_wins++;
+                }
+                else{
+                    S_wins++;
+                }
+            }
+        }
+
+        return true;
+    }
+    return false;
+}
+
+// Display the board and the moves already made
+template <typename T>
+void SUS_XO_Board<T>::display_board() {
+    if (n_moves == 10){ // in case the last player to play was not the winner
+        return; 
+    }
+
+    cout << "\n |";
+    for (int j = 0; j < this->columns; j++) {
+        cout << " " << j << " |";
+    }
+    cout << "\n--------------\n";
+
+    for (int i = 0; i < this->rows; i++) {
+        cout << i << "|";
+        for (int j = 0; j < this->columns; j++) {
+            if (this->board[i][j] == 0) {
+                    cout <<" . |";
+            }
+            else {
+                cout << setw(2) << this->board[i][j] << " |";
+            }
+        }
+        cout << "\n--------------\n";
+    }
+    cout << endl;
+}
+
+//Check if a SUS sequence has been completed
+template <typename T>
+bool complete_SUS(int x, int y){
+    // Check rows and columns
+    string row = {this->board[i][0], this->board[i][1], this->board[i][2]};
+    string col = {this->board[0][i], this->board[1][i], this->board[2][i]};
+    for (int i = 0; i < this->rows; i++) {
+        if ((row == "SUS" && x == i)|| 
+            (col == "SUS" && y == i)) {
+            return true;
+        }
+    }
+
+    // Check diagonals
+    string diag1 = {this->board[0][0], this->board[1][1], this->board[2][2]};
+    string diag2 = {this->board[0][2], this->board[1][1], this->board[2][0]};
+    if ((diag1 == "SUS" && x == y) || 
+        (diag2 == "SUS" && x == 2 - y)) {
+        return true;
+    }
+
+    return false;
+}
+
+// Check if there is a winner
+template <typename T>
+bool SUS_XO_Board<T>::is_win() {
+    if (n_moves >= 9) {
+        if (U_wins > S_wins){
+            winner = 'U';
+        } 
+        else if (S_wins > U_wins){
+            winner = 'S';
+        }
+        if (last == winner) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Check if there is a draw
+template <typename T>
+bool SUS_XO_Board<T>::is_draw() {
+    return (this->n_moves == 9 && U_wins == S_wins);
+}
+
+//Check if game is over
+template <typename T>
+bool SUS_XO_Board<T>::game_is_over() {
+    return is_win() || is_draw();
+}
+
+//------------------------------------------
+
+//SUS_XO_Player Functions
+
+//Constructor for the SUS_XO_Player
+template <typename T>
+SUS_XO_Player<T>::SUS_XO_Player(string name, T symbol) : Player<T>(name, symbol) {}
+
+
+//Function to get next move
+template <typename T>
+void SUS_XO_Player<T>::getmove(int& x, int& y) {
+    if (boardPtr->n_moves == 9) {
+        x = -1;
+        y = -1;
+    }
+    char row, col;
+    while (true){
+        cout << "\nPlease enter your move: row no. x (0 to 2) and column no. y (0 to 2) separated by spaces: ";
+        cin>>row>>col;
+        if ((row - '0' >= 0 && row - '0' <= 2) &&
+            (col - '0' >= 0 && col - '0' <= 2)) {
+                break;
+        }
+        else {
+            cout << "This move is out of range" << endl;
+        }
+    }
+    x = row - '0';
+    y = col - '0';
+}
+
+//SUS_XO_RandomPlayer Functions
+
+//Constructor for SUS_XO_RandomPlayer
+template <typename T>
+SUS_XO_RandomPlayer<T>::SUS_XO_RandomPlayer(T symbol) : RandomPlayer<T>(symbol) {
+    this->dimension = 3;
+    this->name = "Random Computer Player";
+    srand(static_cast<unsigned int>(time(0)));  // Seed the random number generator
+}
+
+template <typename T>
+void SUS_XO_RandomPlayer<T>::getmove(int& x, int& y) {
+    x = rand() % this->dimension;  // Random number between 0 and 2
+    y = rand() % (this->dimension);
+    if (boardPtr->n_moves == 9) { // in case the last player was not the winner
+        x = -1;
+        y = -1;
+    }
+}
 
 
 
