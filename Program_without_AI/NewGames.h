@@ -487,9 +487,9 @@ void Word_XO_Board<T>::display_board() {
 template <typename T>
 bool Word_XO_Board<T>::is_win() {
     // Check rows and columns
-    string row = {this->board[i][0], this->board[i][1], this->board[i][2]}, row_rev = {this->board[i][2], this->board[i][1], this->board[i][0]};
-    string col = {this->board[0][i], this->board[1][i], this->board[2][i]}, col_rev = {this->board[2][i], this->board[1][i], this->board[0][i]};
     for (int i = 0; i < this->rows; i++) {
+        string row = {this->board[i][0], this->board[i][1], this->board[i][2]}, row_rev = {this->board[i][2], this->board[i][1], this->board[i][0]};
+        string col = {this->board[0][i], this->board[1][i], this->board[2][i]}, col_rev = {this->board[2][i], this->board[1][i], this->board[0][i]};
         if ((words.count(row) || words.count(row_rev)) ||
             (words.count(col) || words.count(col_rev))) {
             return true;
@@ -537,7 +537,7 @@ void Word_XO_Player<T>::getmove(int& x, int& y) {
         cin>>smbl;
         smbl = toupper(smbl);
         if (isalpha(smbl)) {
-            symbol = smbl;
+            this->symbol = smbl;
             break;
         }
         else {
@@ -573,7 +573,7 @@ template <typename T>
 void Word_XO_RandomPlayer<T>::getmove(int& x, int& y) {
     x = rand() % this->dimension;  // Random number between 0 and 2
     y = rand() % (this->dimension);
-    symbol = 'A' + (rand() % 26);  // Generate random letter
+    this->symbol = 'A' + (rand() % 26);  // Generate random letter
 }
 
 
@@ -966,7 +966,7 @@ template <typename T>
 bool SUS_XO_Board<T>::update_board(int x, int y, T symbol) {
     // in case the last player is not the winner we increase the move count only to indicate this edge case
     if (x == -1 && y == -1) {
-        n_moves++;
+        this->n_moves++;
         return true;
     }
     // Only update if move is valid
@@ -997,7 +997,7 @@ bool SUS_XO_Board<T>::update_board(int x, int y, T symbol) {
 // Display the board and the moves already made
 template <typename T>
 void SUS_XO_Board<T>::display_board() {
-    if (n_moves == 10){ // in case the last player to play was not the winner
+    if (this->n_moves == 10){ // in case the last player to play was not the winner
         return; 
     }
 
@@ -1024,11 +1024,11 @@ void SUS_XO_Board<T>::display_board() {
 
 //Check if a SUS sequence has been completed
 template <typename T>
-bool complete_SUS(int x, int y){
+bool SUS_XO_Board<T>::complete_SUS(int x, int y){
     // Check rows and columns
-    string row = {this->board[i][0], this->board[i][1], this->board[i][2]};
-    string col = {this->board[0][i], this->board[1][i], this->board[2][i]};
     for (int i = 0; i < this->rows; i++) {
+        string row = {this->board[i][0], this->board[i][1], this->board[i][2]};
+        string col = {this->board[0][i], this->board[1][i], this->board[2][i]};
         if ((row == "SUS" && x == i)|| 
             (col == "SUS" && y == i)) {
             return true;
@@ -1049,7 +1049,7 @@ bool complete_SUS(int x, int y){
 // Check if there is a winner
 template <typename T>
 bool SUS_XO_Board<T>::is_win() {
-    if (n_moves >= 9) {
+    if (this->n_moves >= 9) {
         if (U_wins > S_wins){
             winner = 'U';
         } 
@@ -1087,7 +1087,7 @@ SUS_XO_Player<T>::SUS_XO_Player(string name, T symbol) : Player<T>(name, symbol)
 //Function to get next move
 template <typename T>
 void SUS_XO_Player<T>::getmove(int& x, int& y) {
-    if (boardPtr->n_moves == 9) {
+    if (this->boardPtr->n_moves == 9) {
         x = -1;
         y = -1;
     }
@@ -1121,7 +1121,7 @@ template <typename T>
 void SUS_XO_RandomPlayer<T>::getmove(int& x, int& y) {
     x = rand() % this->dimension;  // Random number between 0 and 2
     y = rand() % (this->dimension);
-    if (boardPtr->n_moves == 9) { // in case the last player was not the winner
+    if (this->boardPtr->n_moves == 9) { // in case the last player was not the winner
         x = -1;
         y = -1;
     }
