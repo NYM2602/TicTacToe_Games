@@ -108,8 +108,65 @@ int main() {
             continue;
         }
 
-        else if (game == '3') {
-            continue;
+        else if (game == '3') { // 5x5 Tic-Tac-Toe
+            Player<char>* players[2];
+            FiveXFive_Board<char>* board = new FiveXFive_Board<char>();
+            string p1_name, p2_name;
+            char p1_type, p2_type, p1_smbl, p2_smbl;
+
+
+            //setup player 1
+            p1_type = ask_for_plyr_type("the first player"); // ask if human or random
+            
+            if (p1_type == '1') {   //if it is a human player then ask for name
+                p1_name = ask_for_name("the first player");
+            }
+            
+            p1_smbl = ask_for_symbol("Please enter the symbol of the first player (X or O): ", 3);
+            
+            
+            //set up player 2
+            
+            p2_type = ask_for_plyr_type("the second player"); // ask if human or random
+            
+            if (p2_type == '1') {   //if it is a human player then ask for name
+                p2_name = ask_for_name("the second player");
+            }
+            
+            if (p1_smbl == 'X') { //set the symbol of player 2 to the opposite of player 1
+                p2_smbl = 'O';
+            }
+            else {
+                p2_smbl = 'X';
+            } 
+
+            //initialize players
+            //player 1
+            if (p1_type == '1') {
+                players[0] = new FiveXFive_Player<char>(p1_name, p1_smbl);
+            }
+            else {
+                players[0] = new FiveXFive_Random_Player<char>(p1_smbl);
+            }
+            //player 2
+            if (p2_type == '1') {
+                players[1] = new FiveXFive_Player<char>(p2_name, p2_smbl);
+            }
+            else {
+                players[1] = new FiveXFive_Random_Player<char>(p2_smbl);
+            }
+
+            // set board for players
+            players[0]->setBoard(board);
+            players[1]->setBoard(board);
+
+            //initialize game manager
+            GameManager<char> FiveXFive_Game(board, players);
+            FiveXFive_Game.run();
+
+            delete board;
+            delete players[0];
+            delete players[1];
         }
 
         else if (game == '4') { // Word Tic-Tac-Toe
@@ -169,7 +226,64 @@ int main() {
         }
 
         else if (game == '6') {
-            continue;
+            Player<char>* players[2];
+            Misere_board<char>* board = new Misere_board<char>();
+            string p1_name, p2_name;
+            char p1_type, p2_type, p1_smbl, p2_smbl;
+
+
+            //setup player 1
+            p1_type = ask_for_plyr_type("the first player"); // ask if human or random
+            
+            if (p1_type == '1') {   //if it is a human player then ask for name
+                p1_name = ask_for_name("the first player");
+            }
+            
+            p1_smbl = ask_for_symbol("Please enter the symbol of the first player (X or O): ", 6);
+            
+            
+            //set up player 2
+            
+            p2_type = ask_for_plyr_type("the second player"); // ask if human or random
+            
+            if (p2_type == '1') {   //if it is a human player then ask for name
+                p2_name = ask_for_name("the second player");
+            }
+            
+            if (p1_smbl == 'X') { //set the symbol of player 2 to the opposite of player 1
+                p2_smbl = 'O';
+            }
+            else {
+                p2_smbl = 'X';
+            } 
+
+            //initialize players
+            //player 1
+            if (p1_type == '1') {
+                players[0] = new Misere_Player<char>(p1_name, p1_smbl);
+            }
+            else {
+                players[0] = new Misere_Random_Player<char>(p1_smbl);
+            }
+            //player 2
+            if (p2_type == '1') {
+                players[1] = new Misere_Player<char>(p2_name, p2_smbl);
+            }
+            else {
+                players[1] = new Misere_Random_Player<char>(p2_smbl);
+            }
+
+            // set board for players
+            players[0]->setBoard(board);
+            players[1]->setBoard(board);
+
+            //initialize game manager
+            GameManager<char> Misere_Game(board, players);
+            Misere_Game.run();
+
+            delete board;
+            delete players[0];
+            delete players[1];
         }
 
         else if (game == '7') {
@@ -285,7 +399,9 @@ char ask_for_symbol(string prompt, int gamenum) {
         cin.ignore();
         smbl = toupper(smbl);
 
-        if (gamenum == 1) { //games that use X and O
+        if (gamenum == 1 ||
+            gamenum == 3 ||
+            gamenum == 6) { //games that use X and O
             if (smbl == 'X' || smbl == 'O') {
                 return smbl;
             }

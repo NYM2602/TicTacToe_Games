@@ -760,7 +760,7 @@ void Misere_Player<T>::getmove(int& x, int& y) {
 //================================================================
 
 template <typename T>
-Misere_Random_Player<T>::Misere_Random_Player(T symbol) : Player<T>(symbol) {
+Misere_Random_Player<T>::Misere_Random_Player(T symbol) : RandomPlayer<T>(symbol) {
     this->dimension =3;
     this->name = "Random Computer Player";
     srand(static_cast<unsigned int>(time(0)));  // Speeds the random number generator
