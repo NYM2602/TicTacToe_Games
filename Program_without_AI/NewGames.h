@@ -208,6 +208,134 @@ void Pyr_XO_RandomPlayer<T>::getmove(int& x, int& y) {
 
 //Game 2
 
+template <typename T>
+class FourInARowBoard : public Board<T> {
+public:
+    FourInARowBoard();
+    ~FourInARowBoard();
+
+    bool update_board(int x, int y, T symbol) override;
+    void display_board() override;
+    bool is_win() override;
+    bool is_draw() override;
+    bool game_is_over() override;
+
+private:
+    bool check_four_in_a_row(int x, int y, T symbol);
+    bool is_within_bounds(int x, int y);
+};
+
+//--------------------------------------- IMPLEMENTATION
+
+template <typename T>
+FourInARowBoard<T>::FourInARowBoard() {
+    this->rows = 6;
+    this->columns = 7;
+    this->n_moves = 0;
+
+    // Initialize a 6x7 board with empty cells
+    this->board = new T*[this->rows];
+    for (int i = 0; i < this->rows; ++i) {
+        this->board[i] = new T[this->columns];
+        for (int j = 0; j < this->columns; ++j) {
+            this->board[i][j] = ' ';
+        }
+    }
+}
+
+template <typename T>
+FourInARowBoard<T>::~FourInARowBoard() {
+    for (int i = 0; i < this->rows; ++i) {
+        delete[] this->board[i];
+    }
+    delete[] this->board;
+}
+
+template <typename T>
+bool FourInARowBoard<T>::update_board(int x, int y, T symbol) {
+    if (x < 0 || x >= this->columns || this->board[0][x] != ' ') {
+        return false; // Invalid column or column is full
+    }
+
+    // Find the lowest available row in the column
+    for (int i = this->rows - 1; i >= 0; --i) {
+        if (this->board[i][x] == ' ') {
+            this->board[i][x] = symbol;
+            ++this->n_moves;
+            return true;
+        }
+    }
+    return false; // This point should not be reached
+}
+
+template <typename T>
+void FourInARowBoard<T>::display_board() {
+    for (int i = 0; i < this->rows; ++i) {
+        for (int j = 0; j < this->columns; ++j) {
+            cout << "| " << this->board[i][j] << " ";
+        }
+        cout << "|" << endl;
+    }
+    for (int j = 0; j < this->columns; ++j) {
+        cout << "----";
+    }
+    cout << "-" << endl;
+    for (int j = 0; j < this->columns; ++j) {
+        cout << "  " << j << " ";
+    }
+    cout << endl;
+}
+
+template <typename T>
+bool FourInARowBoard<T>::is_within_bounds(int x, int y) {
+    return x >= 0 && x < this->rows && y >= 0 && y < this->columns;
+}
+
+template <typename T>
+bool FourInARowBoard<T>::check_four_in_a_row(int x, int y, T symbol) {
+    static const int directions[4][2] = {{0, 1}, {1, 0}, {1, 1}, {1, -1}};
+    for (const auto& dir : directions) {
+        int count = 1;
+        for (int d = -1; d <= 1; d += 2) { // Check both directions
+            int nx = x, ny = y;
+            while (true) {
+                nx += d * dir[0];
+                ny += d * dir[1];
+                if (is_within_bounds(nx, ny) && this->board[nx][ny] == symbol) {
+                    ++count;
+                } else {
+                    break;
+                }
+            }
+        }
+        if (count >= 4) {
+            return true;
+        }
+    }
+    return false;
+}
+
+template <typename T>
+bool FourInARowBoard<T>::is_win() {
+    for (int i = 0; i < this->rows; ++i) {
+        for (int j = 0; j < this->columns; ++j) {
+            if (this->board[i][j] != ' ' && check_four_in_a_row(i, j, this->board[i][j])) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+template <typename T>
+bool FourInARowBoard<T>::is_draw() {
+    return this->n_moves == this->rows * this->columns && !is_win();
+}
+
+template <typename T>
+bool FourInARowBoard<T>::game_is_over() {
+    return is_win() || is_draw();
+}
 
 
 
@@ -578,8 +706,124 @@ void Word_XO_RandomPlayer<T>::getmove(int& x, int& y) {
 
 
 //Game 5
+//Numerical Tic-Tac-Toe
+template <typename T>
+class NumericalTicTacToeBoard : public Board<T> {
+public:
+    NumericalTicTacToeBoard();
+    ~NumericalTicTacToeBoard();
 
+    bool update_board(int x, int y, T symbol) override;
+    void display_board() override;
+    bool is_win() override;
+    bool is_draw() override;
+    bool game_is_over() override;
 
+private:
+    set<T> used_numbers;
+    bool is_within_bounds(int x, int y);
+    bool check_sum(int x1, int y1, int x2, int y2, int x3, int y3);
+};
+
+//--------------------------------------- IMPLEMENTATION
+
+template <typename T>
+NumericalTicTacToeBoard<T>::NumericalTicTacToeBoard() {
+    this->rows = 3;
+    this->columns = 3;
+    this->n_moves = 0;
+
+    // Initialize a 3x3 board with empty cells
+    this->board = new T*[this->rows];
+    for (int i = 0; i < this->rows; ++i) {
+        this->board[i] = new T[this->columns];
+        for (int j = 0; j < this->columns; ++j) {
+            this->board[i][j] = 0;
+        }
+    }
+}
+
+template <typename T>
+NumericalTicTacToeBoard<T>::~NumericalTicTacToeBoard() {
+    for (int i = 0; i < this->rows; ++i) {
+        delete[] this->board[i];
+    }
+    delete[] this->board;
+}
+
+template <typename T>
+bool NumericalTicTacToeBoard<T>::update_board(int x, int y, T symbol) {
+    if (!is_within_bounds(x, y) || this->board[x][y] != 0 || used_numbers.count(symbol) > 0) {
+        return false; // Invalid move
+    }
+
+    this->board[x][y] = symbol;
+    used_numbers.insert(symbol);
+    ++this->n_moves;
+    return true;
+}
+
+template <typename T>
+void NumericalTicTacToeBoard<T>::display_board() {
+    for (int i = 0; i < this->rows; ++i) {
+        for (int j = 0; j < this->columns; ++j) {
+            if (this->board[i][j] == 0) {
+                cout << "|   ";
+            } else {
+                cout << "| " << this->board[i][j] << " ";
+            }
+        }
+        cout << "|" << endl;
+    }
+    for (int j = 0; j < this->columns; ++j) {
+        cout << "----";
+    }
+    cout << "-" << endl;
+}
+
+template <typename T>
+bool NumericalTicTacToeBoard<T>::is_within_bounds(int x, int y) {
+    return x >= 0 && x < this->rows && y >= 0 && y < this->columns;
+}
+
+template <typename T>
+bool NumericalTicTacToeBoard<T>::check_sum(int x1, int y1, int x2, int y2, int x3, int y3) {
+    return this->board[x1][y1] + this->board[x2][y2] + this->board[x3][y3] == 15;
+}
+
+template <typename T>
+bool NumericalTicTacToeBoard<T>::is_win() {
+    // Check rows
+    for (int i = 0; i < this->rows; ++i) {
+        if (check_sum(i, 0, i, 1, i, 2)) {
+            return true;
+        }
+    }
+
+    // Check columns
+    for (int j = 0; j < this->columns; ++j) {
+        if (check_sum(0, j, 1, j, 2, j)) {
+            return true;
+        }
+    }
+
+    // Check diagonals
+    if (check_sum(0, 0, 1, 1, 2, 2) || check_sum(0, 2, 1, 1, 2, 0)) {
+        return true;
+    }
+
+    return false;
+}
+
+template <typename T>
+bool NumericalTicTacToeBoard<T>::is_draw() {
+    return this->n_moves == this->rows * this->columns && !is_win();
+}
+
+template <typename T>
+bool NumericalTicTacToeBoard<T>::game_is_over() {
+    return is_win() || is_draw();
+}
 
 
 //Game 6
