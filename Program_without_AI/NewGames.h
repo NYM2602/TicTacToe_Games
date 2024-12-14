@@ -784,6 +784,7 @@ public:
     bool is_win() override;
     bool is_draw() override;
     bool game_is_over() override;
+    bool is_smallB_winn(int row,int column);
 };
 
 template <typename T>
@@ -829,7 +830,7 @@ template <typename T>
 bool UltimateBoard<T>::update_board(int x, int y, T symbol) {
     int smallB_row = x/3;  // get the row num in the small board
     int smallB_col = y/3;  // get the column num in the small board
-    
+
     //if the small board is win,the move isnt valid
     if(is_smallB_win[smallB_row][smallB_col]) {
         return false;
@@ -837,6 +838,9 @@ bool UltimateBoard<T>::update_board(int x, int y, T symbol) {
     if (this->board[x][y] == '-') {  // placing the symbol if the position is empty
         this->board[x][y] = symbol;
         this->n_moves++;    // increment the moves
+        if (is_smallB_winn(smallB_row, smallB_col)) {
+            is_smallB_win[smallB_row][smallB_col] = true;
+        }
         return true;
     }
     return false;
@@ -848,16 +852,58 @@ void UltimateBoard<T>::display_board() {
         for (int j = 0; j < 9; j++){
             cout<< "(" <<i<< "," <<j<< ")";
             cout<< setw(1) << this->board[i][j]<<" ";
-            if ((j + 1)%3==0){
+            if ((j+1)%3==0){
                 cout << " * "; // Separate each small board by stars
             }
         }
         cout<<endl;
         if ((i + 1)%3==0){  //seprating each 3 rows
-            cout << "***********************************************************************\n";
+            cout << "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n";
         }
     }
     cout<<endl;
+}
+
+template <typename T>
+bool UltimateBoard<T>::is_smallB_winn(int smallB_row, int smallB_col) {
+    T symbol = this->board[smallB_row * 3][smallB_col * 3];
+    if (symbol == '-'){return false;}
+
+    for (int i = 0; i < 3; i++) {// Check rows
+        if (this->board[smallB_row*3+i][smallB_col*3]== symbol &&this->board[smallB_row*3+i][smallB_col*3+1]== symbol &&
+        this->board[smallB_row*3+i][smallB_col*3+2]== symbol)
+            return true;
+    }
+    for (int i = 0; i < 3; i++) {// Check columns
+        if (this->board[smallB_row*3][smallB_col*3+i]== symbol &&
+            this->board[smallB_row*3+1][smallB_col*3+i]== symbol &&
+            this->board[smallB_row*3+2][smallB_col*3+i]== symbol){
+            return true;}
+    }
+    // left to right diagonal
+    if (this->board[smallB_row *3][smallB_col*3] == symbol &&
+        this->board[smallB_row*3+1][smallB_col*3+1] == symbol &&
+        this->board[smallB_row*3+2][smallB_col*3+2] ==symbol){
+        return true;}
+    //right to left diagonal
+    if (this->board[smallB_row*3 +2][smallB_col * 3] == symbol &&
+        this->board[smallB_row* 3+1][smallB_col*3+1] == symbol &&
+        this->board[smallB_row*3][smallB_col*3+2]== symbol){
+        return true;}
+
+    return false;
+}
+
+template <typename T>
+bool UltimateBoard<T>::is_win() {
+    // Check each row, column, and diagonal of the 3x3 meta board
+    for (int i = 0; i < 3; i++) {
+        if (is_smallB_win[i][0] && is_smallB_win[i][1] && is_smallB_win[i][2]){return true;} // check each row in the small boards
+        if (is_smallB_win[0][i] && is_smallB_win[1][i] && is_smallB_win[2][i]){return true;}  // check each column int the small boards
+    }
+    if (is_smallB_win[0][0] && is_smallB_win[1][1] && is_smallB_win[2][2]){return true;} // left to right diagonal
+    if (is_smallB_win[0][2] && is_smallB_win[1][1] && is_smallB_win[2][0]){return true;} // right to left diagonal
+    return false;
 }
 
 template <typename T>
@@ -873,11 +919,9 @@ template <typename T>
 bool UltimateBoard<T>::game_is_over() {
     return is_win() || is_draw();
 }
-
 //================================================================
 //                      PLAYER IMPLEMENTATION
 //================================================================
-
 template <typename T>
 UltimatePlayer<T>::UltimatePlayer(string name, T symbol) : Player<T>(name, symbol) {}
 
@@ -885,12 +929,11 @@ template <typename T>
 void UltimatePlayer<T>::getmove(int& x, int& y) {
     cout << "\nPlease enter your move (x and y) separated by spaces (0 to 8): ";
     cin >> x >> y;
+    cout<< "Player input: (" << x << ", " << y << ")\n";
 }
-
 //================================================================
 //                     RANDOM PLAYER IMPLEMENTATION
 //================================================================
-
 template <typename T>
 UltimateRandomPlayer<T>::UltimateRandomPlayer(T symbol) : RandomPlayer<T>(symbol) {}
 
@@ -899,7 +942,6 @@ void UltimateRandomPlayer<T>::getmove(int& x, int& y) {
         x = rand() % 9;  // Random number between 0 and 8
         y = rand() % 9;
 }
-
 
 //Game 9
 
