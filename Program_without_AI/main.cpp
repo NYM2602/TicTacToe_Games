@@ -43,6 +43,8 @@ int main() {
         cin.ignore();
         
         if (game == '1') { // Pyramid Tic-Tac-Toe
+            cout << "*** Pyramid Tic-Tac-Toe ***" << endl;
+            
             Player<char>* players[2];
             Pyr_XO_Board<char>* board = new Pyr_XO_Board<char>();
             string p1_name, p2_name;
@@ -105,10 +107,13 @@ int main() {
         }
 
         else if (game == '2'){ //Four in a row
+            cout << "*** Four in a row ***" << endl;
             continue;
         }
 
         else if (game == '3') { // 5x5 Tic-Tac-Toe
+            cout << "*** 5x5 Tic-Tac-Toe ***" << endl;
+
             Player<char>* players[2];
             FiveXFive_Board<char>* board = new FiveXFive_Board<char>();
             string p1_name, p2_name;
@@ -170,6 +175,8 @@ int main() {
         }
 
         else if (game == '4') { // Word Tic-Tac-Toe
+            cout << "*** Word Tic-Tac-Toe ***" << endl;
+
             Player<char>* players[2];
             Word_XO_Board<char>* board = new Word_XO_Board<char>();
             string p1_name, p2_name;
@@ -221,11 +228,14 @@ int main() {
             delete players[1];
         }
 
-        else if (game == '5') {
+        else if (game == '5') { // Numerical Tic-Tac-Toe
+            cout << "*** Numerical Tic-Tac-Toe ***" << endl;
             continue;
         }
 
-        else if (game == '6') {
+        else if (game == '6') { //Misere (Inverse) Tic-Tac-Toe
+            cout << "*** Misere (Inverse) Tic-Tac-Toe ***" << endl;
+
             Player<char>* players[2];
             Misere_board<char>* board = new Misere_board<char>();
             string p1_name, p2_name;
@@ -286,11 +296,14 @@ int main() {
             delete players[1];
         }
 
-        else if (game == '7') {
+        else if (game == '7') { // Ultimate Tic-Tac-Toe
+            cout << "*** Ultimate Tic-Tac-Toe ***" << endl;
             continue;
         }
 
         else if (game == '8') { // SUS
+            cout << "*** SUS ***" << endl;
+            
             Player<char>* players[2];
             SUS_XO_Board<char>* board = new SUS_XO_Board<char>();
             string p1_name, p2_name;

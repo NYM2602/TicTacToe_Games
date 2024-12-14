@@ -65,8 +65,10 @@ bool Pyr_XO_Board<T>::update_board(int x, int y, T symbol) {
     // Only update if move is valid
     if (!(x < 0 || x >= this->rows || y < 0 || y >= this->columns) && (this->board[x][y] == 0|| symbol == 0)) {
         if (symbol == 0){
-            this->n_moves--;
-            this->board[x][y] = 0;
+            if (this->board[x][y] != '0') {
+                this->n_moves--;
+                this->board[x][y] = 0;
+            }
         }
         else {
             this->n_moves++;
@@ -225,6 +227,21 @@ private:
     bool is_within_bounds(int x, int y);
 };
 
+template <typename T>
+class FourInARowPlayer : public Player<T> {
+public:
+    FourInARowPlayer (string name, T symbol);
+    void getmove(int& x, int& y) ;
+
+};
+
+template <typename T>
+class FourInARowRandomPlayer : public RandomPlayer<T>{
+public:
+    FourInARowRandomPlayer (T symbol);
+    void getmove(int &x, int &y) ;
+};
+
 //--------------------------------------- IMPLEMENTATION
 
 template <typename T>
@@ -337,6 +354,51 @@ bool FourInARowBoard<T>::game_is_over() {
     return is_win() || is_draw();
 }
 
+//FourInARowPlayer Functions
+
+//Constructor for the FourInARowPlayer
+template <typename T>
+FourInARowPlayer<T>::FourInARowPlayer(string name, T symbol) : Player<T>(name, symbol) {}
+
+
+//Function to get next move
+template <typename T>
+void FourInARowPlayer<T>::getmove(int& x, int& y) {
+    char col;
+    while (true){
+        cout << "\nPlease enter the column number(0 to 6) you want to drop your symbol at: ";
+        cin>>col;
+        if (col - '0' >= 0 && col - '0' <= 6) {
+            if (this->boardPtr[0][col-'0'] != ' ') {
+                cout << "This column is full" << endl;
+            }
+            else {
+                break;
+            } 
+        }
+        else {
+            cout << "This move is out of range" << endl;
+        }
+    }
+    x = col - '0';
+    y = 0; // y is not used in update board
+}
+
+//FourInARowRandomPlayer Functions
+
+//Constructor for FourInARowRandomPlayer
+template <typename T>
+FourInARowRandomPlayer<T>::FourInARowRandomPlayer(T symbol) : RandomPlayer<T>(symbol) {
+    this->dimension = 7;
+    this->name = "Random Computer Player";
+    srand(static_cast<unsigned int>(time(0)));  // Seed the random number generator
+}
+
+template <typename T>
+void FourInARowRandomPlayer<T>::getmove(int& x, int& y) {
+    x = rand() % this->dimension;  // Random number between 0 and 6
+    y = 1; // y is not used in update board
+}
 
 
 //Game 3
@@ -717,12 +779,33 @@ public:
     bool is_win() override;
     bool is_draw() override;
     bool game_is_over() override;
+    bool is_used(T symbol);
 
 private:
     set<T> used_numbers;
     bool is_within_bounds(int x, int y);
     bool check_sum(int x1, int y1, int x2, int y2, int x3, int y3);
 };
+
+template <typename T>
+class NumericalTicTacToePlayer : public Player<T> {
+protected:
+    int parity;
+public:
+    NumericalTicTacToePlayer (string name, T symbol, int parity);
+    void getmove(int& x, int& y) ;
+
+};
+
+template <typename T>
+class NumericalTicTacToeRandomPlayer : public RandomPlayer<T>{
+protected:
+    int parity;
+public:
+    NumericalTicTacToeRandomPlayer (T symbol, int parity);
+    void getmove(int &x, int &y) ;
+};
+
 
 //--------------------------------------- IMPLEMENTATION
 
@@ -752,7 +835,8 @@ NumericalTicTacToeBoard<T>::~NumericalTicTacToeBoard() {
 
 template <typename T>
 bool NumericalTicTacToeBoard<T>::update_board(int x, int y, T symbol) {
-    if (!is_within_bounds(x, y) || this->board[x][y] != 0 || used_numbers.count(symbol) > 0) {
+    if (!is_within_bounds(x, y) || this->board[x][y] != 0 || used_numbers.count(symbol) > 0 ||
+        symbol < 1 || symbol > 9) {
         return false; // Invalid move
     }
 
@@ -822,6 +906,78 @@ bool NumericalTicTacToeBoard<T>::is_draw() {
 template <typename T>
 bool NumericalTicTacToeBoard<T>::game_is_over() {
     return is_win() || is_draw();
+}
+
+//Check if a number was used before
+template <typename T>
+bool NumericalTicTacToeBoard<T>::is_used(T symbol) {
+    if (used_numbers.count(symbol) > 0) {
+        return true;
+    }
+    return false;
+}
+
+//------------------------------------------
+
+//NumericalTicTacToePlayer Functions
+
+//Constructor for the NumericalTicTacToePlayer
+template <typename T>
+NumericalTicTacToePlayer<T>::NumericalTicTacToePlayer(string name, T symbol, int parity) : Player<T>(name, symbol) {
+    this->parity = parity;
+}
+
+
+//Function to get next move
+template <typename T>
+void NumericalTicTacToePlayer<T>::getmove(int& x, int& y) {
+    char row, col, smbl;
+    while (true) {
+        cout << "\nPlease enter the number you want to add to the board: ";
+        cin>>smbl;
+        if (isdigit(smbl) && (smbl - '0')%2 == this->parity && 
+            !static_cast<NumericalTicTacToeBoard<int>*>(this->boardPtr)->is_used(smbl-'0')) { // check that the number was not used before
+            this->symbol = smbl;
+            break;
+        }
+        else {
+            cout << "This is not a valid number" << endl;
+        }
+    }
+    while (true){
+        cout << "\nPlease enter your move: row no. x (0 to 2) and column no. y (0 to 2) separated by spaces: ";
+        cin>>row>>col;
+        if ((row - '0' >= 0 && row - '0' <= 2) &&
+            (col - '0' >= 0 && col - '0' <= 2)) {
+                break;
+        }
+        else {
+            cout << "This move is out of range" << endl;
+        }
+    }
+    x = row - '0';
+    y = col - '0';
+}
+
+//NumericalTicTacToeRandomPlayer Functions
+
+//Constructor for NumericalTicTacToeRandomPlayer
+template <typename T>
+NumericalTicTacToeRandomPlayer<T>::NumericalTicTacToeRandomPlayer(T symbol, int parity) : RandomPlayer<T>(symbol) {
+    this->dimension = 3;
+    this->name = "Random Computer Player";
+    this->parity = parity;
+    srand(static_cast<unsigned int>(time(0)));  // Seed the random number generator
+}
+
+template <typename T>
+void NumericalTicTacToeRandomPlayer<T>::getmove(int& x, int& y) {
+    x = rand() % this->dimension;  // Random number between 0 and 2
+    y = rand() % this->dimension;
+    this->symbol = rand() % 10;
+    if ((this->symbol)%2 != this->parity) {
+        (this->symbol)++;
+    }
 }
 
 
