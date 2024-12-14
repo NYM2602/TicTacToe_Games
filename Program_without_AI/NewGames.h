@@ -340,7 +340,6 @@ bool FourInARowBoard<T>::game_is_over() {
 
 
 //Game 3
-
 template <typename T>
 class FiveXFive_Board : public Board<T> {
 private:
@@ -355,7 +354,7 @@ public:
     bool is_win();
     bool is_draw();
     bool game_is_over();
-    int count_three(T symbol);  // additional func for counting each three in a row, column or diagonal
+    int count_three(T symbol); // additional func to count each three in a row, column or diagonal
 };
 
 template <typename T>
@@ -372,11 +371,9 @@ public:
     void getmove(int& x, int& y);
 };
 
-
 //=============================================================================
 //                               IMPLEMENTATION
 //=============================================================================
-
 
 template <typename T>
 FiveXFive_Board<T>::FiveXFive_Board() {    //constructor of the FiveXFive_Board class (makes the board empty)
@@ -386,7 +383,7 @@ FiveXFive_Board<T>::FiveXFive_Board() {    //constructor of the FiveXFive_Board 
     for (int i = 0; i < this->rows; i++) {
         this->board[i] = new char[this->columns];
         for (int j = 0; j < this->columns; j++) {
-            this->board[i][j] = 0;
+            this->board[i][j] = '-';
         }
     }
     //number of moves and total moves are zero
@@ -397,12 +394,12 @@ FiveXFive_Board<T>::FiveXFive_Board() {    //constructor of the FiveXFive_Board 
 template <typename T>
 void FiveXFive_Board<T>::display_board() {
     for (int i = 0; i < this->rows; i++) {
-        cout << "\n|| ";
+        cout << "\n| ";
         for (int j = 0; j < this->columns; j++) {
             cout << "(" << i << "," << j << ")";
-            cout << setw(2) << this->board[i][j] << " ||";
+            cout <<setw(1) << this->board[i][j] << " |";
         }
-        cout << "\n=======================================";
+        cout << "\n__________________________________________";
     }
     cout << endl;
 }
@@ -410,13 +407,18 @@ void FiveXFive_Board<T>::display_board() {
 template <typename T>
 bool FiveXFive_Board<T>::update_board(int x, int y, T symbol) {
     //if the move is valid place the symbol in the position and increment the counter
-    if (!(x < 0||x >= this->rows||y < 0||y>=this->columns) && this->board[x][y] == 0) {
-        this->board[x][y] = toupper(symbol);
-        this->n_moves++;
-        t_moves++;
-        return true;
-    }
-    return false;
+    if (x <0|| x>=this->rows|| y<0||y>= this->columns) {
+        cerr<< "invalid move (out of bounds): ( " << x << "," << y << " )"<<endl;
+        return false;}
+
+    if (this->board[x][y] != '-') {
+        cerr<< "invalid cell (already played): (" << x << ", " << y << ")\n";
+        return false;}
+    this->board[x][y] = toupper(symbol);
+    this->n_moves++;
+    t_moves++;
+    cout << "valid move:(" << x << ", " << y << ")  symbol-> " << symbol << "\n";
+    return true;
 }
 
 // func that counts each three (vertical ,horizontal ,diagonal)
@@ -453,7 +455,6 @@ int FiveXFive_Board<T>::count_three(T symbol) {
     }
     return count;}
 
-
 template <typename T>   // Check if the game is a draw
 bool FiveXFive_Board<T>::is_draw() {
     //condition when game is draw
@@ -472,13 +473,12 @@ bool FiveXFive_Board<T>::is_win() {
 
 template <typename T>  // Check whether the game is over or not
 bool FiveXFive_Board<T>::game_is_over() {
-    return !(is_win()) &&!(is_draw());
+    return (is_win()) || (is_draw());
 }
 
 //================================================================
 //                      PLAYERS IMPLEMENTATION
 //================================================================
-
 
 template <typename T>
 FiveXFive_Player<T>::FiveXFive_Player(std::string name, T symbol) : Player<T>(name, symbol) {}
@@ -488,13 +488,12 @@ template <typename T>
 void FiveXFive_Player<T>::getmove(int& x, int& y) {
     cout << "\nPlease enter your move x and y (0 to 4) separated by spaces: ";
     cin >> x >> y;
+    cout<< "Player input: (" << x << ", " << y << ")\n";
 }
 
 //================================================================
 //                     RANDOM  PLAYERS IMPLEMENTATION
 //================================================================
-
-
 
 // Constructor for FiveByFive_Random_Player
 template <typename T>
