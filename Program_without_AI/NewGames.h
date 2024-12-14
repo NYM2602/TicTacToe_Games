@@ -222,6 +222,8 @@ public:
     bool is_draw() override;
     bool game_is_over() override;
 
+    bool is_full(int col);
+
 private:
     bool check_four_in_a_row(int x, int y, T symbol);
     bool is_within_bounds(int x, int y);
@@ -354,6 +356,14 @@ bool FourInARowBoard<T>::game_is_over() {
     return is_win() || is_draw();
 }
 
+// check if a column is full
+template <typename T>
+bool FourInARowBoard<T>::is_full(int col) {
+    return this->board[0][col] != ' ';
+}
+
+//-----------------------------------------------
+
 //FourInARowPlayer Functions
 
 //Constructor for the FourInARowPlayer
@@ -369,7 +379,7 @@ void FourInARowPlayer<T>::getmove(int& x, int& y) {
         cout << "\nPlease enter the column number(0 to 6) you want to drop your symbol at: ";
         cin>>col;
         if (col - '0' >= 0 && col - '0' <= 6) {
-            if (this->boardPtr[0][col-'0'] != ' ') {
+            if (static_cast<FourInARowBoard<char>*>(this->boardPtr)->is_full(col-'0')) {
                 cout << "This column is full" << endl;
             }
             else {
@@ -835,15 +845,15 @@ NumericalTicTacToeBoard<T>::~NumericalTicTacToeBoard() {
 
 template <typename T>
 bool NumericalTicTacToeBoard<T>::update_board(int x, int y, T symbol) {
-    if (!is_within_bounds(x, y) || this->board[x][y] != 0 || used_numbers.count(symbol) > 0 ||
-        symbol < 1 || symbol > 9) {
-        return false; // Invalid move
+    if (is_within_bounds(x, y) && this->board[x][y] == 0 && used_numbers.count(symbol) == 0 &&
+        symbol >= 1 && symbol <= 9) {
+        this->board[x][y] = symbol;
+        used_numbers.insert(symbol);
+        ++this->n_moves;
+        return true;
     }
 
-    this->board[x][y] = symbol;
-    used_numbers.insert(symbol);
-    ++this->n_moves;
-    return true;
+    return false;
 }
 
 template <typename T>
@@ -866,7 +876,7 @@ void NumericalTicTacToeBoard<T>::display_board() {
 
 template <typename T>
 bool NumericalTicTacToeBoard<T>::is_within_bounds(int x, int y) {
-    return x >= 0 && x < this->rows && y >= 0 && y < this->columns;
+    return (x >= 0) && (x < this->rows) && (y >= 0) && (y < this->columns);
 }
 
 template <typename T>
@@ -937,7 +947,7 @@ void NumericalTicTacToePlayer<T>::getmove(int& x, int& y) {
         cin>>smbl;
         if (isdigit(smbl) && (smbl - '0')%2 == this->parity && 
             !static_cast<NumericalTicTacToeBoard<int>*>(this->boardPtr)->is_used(smbl-'0')) { // check that the number was not used before
-            this->symbol = smbl;
+            this->symbol = smbl - '0';
             break;
         }
         else {

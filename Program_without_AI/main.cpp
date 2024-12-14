@@ -108,7 +108,65 @@ int main() {
 
         else if (game == '2'){ //Four in a row
             cout << "*** Four in a row ***" << endl;
-            continue;
+                        
+            Player<char>* players[2];
+            FourInARowBoard<char>* board = new FourInARowBoard<char>();
+            string p1_name, p2_name;
+            char p1_type, p2_type, p1_smbl, p2_smbl;
+
+
+            //setup player 1
+            p1_type = ask_for_plyr_type("the first player"); // ask if human or random
+            
+            if (p1_type == '1') {   //if it is a human player then ask for name
+                p1_name = ask_for_name("the first player");
+            }
+            
+            p1_smbl = ask_for_symbol("Please enter the symbol of the first player (X or O): ", 2);
+            
+            
+            //set up player 2
+            
+            p2_type = ask_for_plyr_type("the second player"); // ask if human or random
+            
+            if (p2_type == '1') {   //if it is a human player then ask for name
+                p2_name = ask_for_name("the second player");
+            }
+            
+            if (p1_smbl == 'X') { //set the symbol of player 2 to the opposite of player 1
+                p2_smbl = 'O';
+            }
+            else {
+                p2_smbl = 'X';
+            } 
+
+            //initialize players
+            //player 1
+            if (p1_type == '1') {
+                players[0] = new FourInARowPlayer<char>(p1_name, p1_smbl);
+            }
+            else {
+                players[0] = new FourInARowRandomPlayer<char>(p1_smbl);
+            }
+            //player 2
+            if (p2_type == '1') {
+                players[1] = new FourInARowPlayer<char>(p2_name, p2_smbl);
+            }
+            else {
+                players[1] = new FourInARowRandomPlayer<char>(p2_smbl);
+            }
+
+            // set board for players
+            players[0]->setBoard(board);
+            players[1]->setBoard(board);
+
+            //initialize game manager
+            GameManager<char> FourInARowGame(board, players);
+            FourInARowGame.run();
+
+            delete board;
+            delete players[0];
+            delete players[1];
         }
 
         else if (game == '3') { // 5x5 Tic-Tac-Toe
@@ -230,7 +288,65 @@ int main() {
 
         else if (game == '5') { // Numerical Tic-Tac-Toe
             cout << "*** Numerical Tic-Tac-Toe ***" << endl;
-            continue;
+                        
+            Player<int>* players[2];
+            NumericalTicTacToeBoard<int>* board = new NumericalTicTacToeBoard<int>();
+            string p1_name, p2_name;
+            char p1_type, p2_type, p1_smbl, p2_smbl;
+
+
+            //setup player 1
+            p1_type = ask_for_plyr_type("the first player"); // ask if human or random
+            
+            if (p1_type == '1') {   //if it is a human player then ask for name
+                p1_name = ask_for_name("the first player");
+            }
+            
+            p1_smbl = ask_for_symbol("Please enter the parity of the first player:\n1) Odd\n2) Even", 5);
+            
+            
+            //set up player 2
+            
+            p2_type = ask_for_plyr_type("the second player"); // ask if human or random
+            
+            if (p2_type == '1') {   //if it is a human player then ask for name
+                p2_name = ask_for_name("the second player");
+            }
+            
+            if (p1_smbl == '1') { //set the parity of the second player to the opposite of first player
+                p2_smbl = '0';
+            }
+            else {
+                p2_smbl = '1';
+            } 
+
+            //initialize players
+            //player 1
+            if (p1_type == '1') {
+                players[0] = new NumericalTicTacToePlayer<int>(p1_name, 0, p1_smbl - '0');
+            }
+            else {
+                players[0] = new NumericalTicTacToeRandomPlayer<int>(0, p1_smbl - '0');
+            }
+            //player 2
+            if (p2_type == '1') {
+                players[1] = new NumericalTicTacToePlayer<int>(p2_name, 0, p2_smbl - '0');
+            }
+            else {
+                players[1] = new NumericalTicTacToeRandomPlayer<int>(0, p2_smbl - '0');
+            }
+
+            // set board for players
+            players[0]->setBoard(board);
+            players[1]->setBoard(board);
+
+            //initialize game manager
+            GameManager<int> NumericalTicTacToeGame(board, players);
+            NumericalTicTacToeGame.run();
+
+            delete board;
+            delete players[0];
+            delete players[1];
         }
 
         else if (game == '6') { //Misere (Inverse) Tic-Tac-Toe
@@ -412,13 +528,23 @@ char ask_for_symbol(string prompt, int gamenum) {
         cin.ignore();
         smbl = toupper(smbl);
 
-        if (gamenum == 1 ||
-            gamenum == 3 ||
-            gamenum == 6) { //games that use X and O
+        if (gamenum == 1 || gamenum == 2 ||
+            gamenum == 3 || gamenum == 6 ) { //games that use X and O
             if (smbl == 'X' || smbl == 'O') {
                 return smbl;
             }
             cout << "This is not a valid symbol" << endl;
+        }
+        else if (gamenum == 5) { // get parity
+            if (smbl == '1') { // odd parity
+                return '1';
+            }
+            else if (smbl == '2') { //even parity
+                return '0';
+            }
+            else {
+                cout << "This is not a valid choice" << endl;
+            }
         }
         else if (gamenum == 8) {
             if (smbl == 'S' || smbl == 'U') {
