@@ -69,12 +69,8 @@ int main() {
                 p2_name = ask_for_name("the second player");
             }
             
-            if (p1_smbl == 'X') { //set the symbol of player 2 to the opposite of player 1
-                p2_smbl = 'O';
-            }
-            else {
-                p2_smbl = 'X';
-            } 
+            p2_smbl = p1_smbl == 'X' ? 'O' : 'X'; //set the symbol of player 2 to the opposite of player 1
+            
 
             //initialize players
             //player 1
@@ -133,12 +129,7 @@ int main() {
                 p2_name = ask_for_name("the second player");
             }
             
-            if (p1_smbl == 'X') { //set the symbol of player 2 to the opposite of player 1
-                p2_smbl = 'O';
-            }
-            else {
-                p2_smbl = 'X';
-            } 
+            p2_smbl = p1_smbl == 'X' ? 'O' : 'X'; //set the symbol of player 2 to the opposite of player 1
 
             //initialize players
             //player 1
@@ -196,12 +187,7 @@ int main() {
                 p2_name = ask_for_name("the second player");
             }
             
-            if (p1_smbl == 'X') { //set the symbol of player 2 to the opposite of player 1
-                p2_smbl = 'O';
-            }
-            else {
-                p2_smbl = 'X';
-            } 
+            p2_smbl = p1_smbl == 'X' ? 'O' : 'X'; //set the symbol of player 2 to the opposite of player 1
 
             //initialize players
             //player 1
@@ -313,12 +299,7 @@ int main() {
                 p2_name = ask_for_name("the second player");
             }
             
-            if (p1_smbl == '1') { //set the parity of the second player to the opposite of first player
-                p2_smbl = '0';
-            }
-            else {
-                p2_smbl = '1';
-            } 
+            p2_smbl = p1_smbl == '1' ? '0' : '1';  //set the parity of the second player to the opposite of first player
 
             //initialize players
             //player 1
@@ -376,12 +357,7 @@ int main() {
                 p2_name = ask_for_name("the second player");
             }
             
-            if (p1_smbl == 'X') { //set the symbol of player 2 to the opposite of player 1
-                p2_smbl = 'O';
-            }
-            else {
-                p2_smbl = 'X';
-            } 
+            p2_smbl = p1_smbl == 'X' ? 'O' : 'X'; //set the symbol of player 2 to the opposite of player 1
 
             //initialize players
             //player 1
@@ -414,7 +390,61 @@ int main() {
 
         else if (game == '7') { // Ultimate Tic-Tac-Toe
             cout << "*** Ultimate Tic-Tac-Toe ***" << endl;
-            continue;
+            
+            Player<char>* players[2];
+            UltimateBoard<char>* board = new UltimateBoard<char>();
+            string p1_name, p2_name;
+            char p1_type, p2_type, p1_smbl, p2_smbl;
+
+
+            //setup player 1
+            p1_type = ask_for_plyr_type("the first player"); // ask if human or random
+            
+            if (p1_type == '1') {   //if it is a human player then ask for name
+                p1_name = ask_for_name("the first player");
+            }
+            
+            p1_smbl = ask_for_symbol("Please enter the symbol of the first player (X or O): ", 1);
+            
+            
+            //set up player 2
+            
+            p2_type = ask_for_plyr_type("the second player"); // ask if human or random
+            
+            if (p2_type == '1') {   //if it is a human player then ask for name
+                p2_name = ask_for_name("the second player");
+            }
+            
+            p2_smbl = p1_smbl == 'X' ? 'O' : 'X'; //set the symbol of player 2 to the opposite of player 1
+            
+
+            //initialize players
+            //player 1
+            if (p1_type == '1') {
+                players[0] = new UltimatePlayer<char>(p1_name, p1_smbl);
+            }
+            else {
+                players[0] = new UltimateRandomPlayer<char>(p1_smbl);
+            }
+            //player 2
+            if (p2_type == '1') {
+                players[1] = new UltimatePlayer<char>(p2_name, p2_smbl);
+            }
+            else {
+                players[1] = new UltimateRandomPlayer<char>(p2_smbl);
+            }
+
+            // set board for players
+            players[0]->setBoard(board);
+            players[1]->setBoard(board);
+
+            //initialize game manager
+            GameManager<char> UltimateGame(board, players);
+            UltimateGame.run();
+
+            delete board;
+            delete players[0];
+            delete players[1];
         }
 
         else if (game == '8') { // SUS
@@ -444,12 +474,7 @@ int main() {
                 p2_name = ask_for_name("the second player");
             }
             
-            if (p1_smbl == 'S') { //set the symbol of player 2 to the opposite of player 1
-                p2_smbl = 'U';
-            }
-            else {
-                p2_smbl = 'S';
-            } 
+            p2_smbl = p1_smbl == 'S' ? 'U' : 'S'; //set the symbol of player 2 to the opposite of player 1
 
             //initialize players
             //player 1
@@ -528,14 +553,7 @@ char ask_for_symbol(string prompt, int gamenum) {
         cin.ignore();
         smbl = toupper(smbl);
 
-        if (gamenum == 1 || gamenum == 2 ||
-            gamenum == 3 || gamenum == 6 ) { //games that use X and O
-            if (smbl == 'X' || smbl == 'O') {
-                return smbl;
-            }
-            cout << "This is not a valid symbol" << endl;
-        }
-        else if (gamenum == 5) { // get parity
+        if (gamenum == 5) { // get parity for numericat tic-tac-toe
             if (smbl == '1') { // odd parity
                 return '1';
             }
@@ -546,8 +564,14 @@ char ask_for_symbol(string prompt, int gamenum) {
                 cout << "This is not a valid choice" << endl;
             }
         }
-        else if (gamenum == 8) {
+        else if (gamenum == 8) { // SUS game
             if (smbl == 'S' || smbl == 'U') {
+                return smbl;
+            }
+            cout << "This is not a valid symbol" << endl;
+        }
+        else { //games that use X and O
+            if (smbl == 'X' || smbl == 'O') {
                 return smbl;
             }
             cout << "This is not a valid symbol" << endl;

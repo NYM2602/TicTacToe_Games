@@ -881,7 +881,7 @@ bool NumericalTicTacToeBoard<T>::is_within_bounds(int x, int y) {
 
 template <typename T>
 bool NumericalTicTacToeBoard<T>::check_sum(int x1, int y1, int x2, int y2, int x3, int y3) {
-    return this->board[x1][y1] + this->board[x2][y2] + this->board[x3][y3] == 15;
+    return this->board[x1][y1] + this->board[x2][y2] + this->board[x3][y3] == 15 && this->board[x1][y1] != 0 && this->board[x2][y2] != 0 && this->board[x3][y3] != 0;
 }
 
 template <typename T>
@@ -1187,7 +1187,7 @@ void Misere_Random_Player<T>::getmove(int& x, int& y) {
 template <typename T>
 class UltimateBoard : public Board<T> {
 private:
-    bool is_smallB_win[3][3];  // tracks if any of the small boards is_win
+    T smallB_win[3][3];  // tracks if any of the small boards is_win
 public:
     UltimateBoard();
     bool update_board(int x, int y, T symbol) override;
@@ -1195,6 +1195,8 @@ public:
     bool is_win() override;
     bool is_draw() override;
     bool game_is_over() override;
+    bool is_smallB_win(int x, int y); // check if a small board has been won
+    bool is_smallB_draw(int x, int y);
 };
 
 template <typename T>
@@ -1230,7 +1232,7 @@ UltimateBoard<T>::UltimateBoard() {
     //loops on the small board making its status false
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
-            is_smallB_win[i][j] = false;   //no wins yet
+            smallB_win[i][j] = 0;   //no wins yet
         }
     }
     this->n_moves = 0;
@@ -1240,19 +1242,87 @@ template <typename T>
 bool UltimateBoard<T>::update_board(int x, int y, T symbol) {
     int smallB_row = x/3;  // get the row num in the small board
     int smallB_col = y/3;  // get the column num in the small board
-    
-    //if the small board is win,the move isnt valid
-    if(is_smallB_win[smallB_row][smallB_col]) {
+     
+     
+    //check if inbounds and if the small board is win,the move isnt valid
+    if(x < 0 || x > 8 || y < 0 || y > 8 || smallB_win[smallB_row][smallB_col] != 0) {
         return false;
     }
     if (this->board[x][y] == '-') {  // placing the symbol if the position is empty
         this->board[x][y] = symbol;
         this->n_moves++;    // increment the moves
+        if (is_smallB_win(smallB_row, smallB_col)) { // if a small board has been won then change all elements of the board to the winner symbol
+            smallB_win[smallB_row][smallB_col] = symbol;
+            for (int i = smallB_row * 3; i < (smallB_row * 3) + 3; i++) {
+                for (int j = smallB_col * 3; j < (smallB_col * 3) + 3; j++) {
+                    this->board[i][j] = symbol;
+                }
+            }
+        }
+        else if (is_smallB_draw(smallB_row, smallB_col)) { // if there is a draw in a small board then change elements to 'D' to indicate a draw
+            smallB_win[smallB_row][smallB_col] = 'D';
+            for (int i = smallB_row * 3; i < (smallB_row * 3) + 3; i++) {
+                for (int j = smallB_col * 3; j < (smallB_col * 3) + 3; j++) {
+                    this->board[i][j] = 'D';
+                }
+            }
+        }
         return true;
     }
     return false;
 }
 
+// Check if there is a new small win
+template <typename T>
+bool UltimateBoard<T>::is_smallB_win(int x, int y) {
+    //x and y are the row and column of a move divided by 3 to know which board we are on
+    int row = x * 3, col = y * 3;
+    //check rows
+    for (int i = row; i < row + 3; i++) {
+        if (this->board[i][col] == this->board[i][col+1] && 
+            this->board[i][col+1] == this->board[i][col+2] &&
+            this->board[i][col] != '-') {
+                return true;
+            }
+    }
+
+    // Check columns
+    for (int j = col; j < col + 3; j++) {
+        if (this->board[row][j] == this->board[row+1][j] && 
+            this->board[row+1][j] == this->board[row+2][j] &&
+            this->board[row][j] != '-') {
+                return true;
+            }
+    }
+
+    // Check diagonals
+    if ((this->board[row][col] == this->board[row+1][col+1] && this->board[row+1][col+1] == this->board[row+2][col+2] && this->board[row][col] != '-') ||
+        (this->board[row][col+2] == this->board[row+1][col+1] && this->board[row+1][col+1] == this->board[row+2][col] && this->board[row][col+2] != '-')) {
+            return true;
+    }
+
+    return false;
+}
+
+
+// Check if there is a draw in small board
+template <typename T>
+bool UltimateBoard<T>::is_smallB_draw(int x, int y) {
+    //x and y are the row and column of a move divided by 3 to know which board we are on
+    int row = x * 3, col = y * 3;
+    //check rows
+    for (int i = row; i < row + 3; i++) {
+        for (int j = col; j < col + 3; j++) {
+            if (this->board[i][j] == '-'){
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+// Display the board and moves already made
 template <typename T>
 void UltimateBoard<T>::display_board() {
     for (int i = 0; i < 9; i++){
@@ -1271,15 +1341,41 @@ void UltimateBoard<T>::display_board() {
     cout<<endl;
 }
 
+// Check if there is a win
 template <typename T>
-bool UltimateBoard<T>::is_draw() {
-    // game is draw if no win
-    if (this->n_moves == this->rows * this->columns) {
-        return !is_win();
+bool UltimateBoard<T>::is_win() {
+    // Check rows (horizontal boards) and columns (vertical boards)
+    for (int i = 0; i < 3; i++) {
+        if ((this->smallB_win[i][0] == this->smallB_win[i][1] && this->smallB_win[i][1] == this->smallB_win[i][2] && this->smallB_win[i][0] != 0 && this->smallB_win[i][0] != 'D') ||
+            (this->smallB_win[0][i] == this->smallB_win[1][i] && this->smallB_win[1][i] == this->smallB_win[2][i] && this->smallB_win[0][i] != 0 && this->smallB_win[0][i] != 'D')) {
+            return true;
+        }
+    } 
+
+    // Check diagonals
+    if ((this->smallB_win[0][0] == this->smallB_win[1][1] && this->smallB_win[1][1] == this->smallB_win[2][2] && this->smallB_win[0][0] != 0 && this->smallB_win[0][0] != 'D') ||
+        (this->smallB_win[0][2] == this->smallB_win[1][1] && this->smallB_win[1][1] == this->smallB_win[2][0] && this->smallB_win[0][2] != 0 && this->smallB_win[0][2] != 'D')) {
+        return true;
     }
+
     return false;
 }
 
+// Check if there is a draw
+template <typename T>
+bool UltimateBoard<T>::is_draw() {
+    // game is draw if all boards are either won or there is a draw
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            if (smallB_win[i][j] == 0) {
+                return false;
+            }
+        }
+    }
+    return !is_win();
+}
+
+// Check if game is over
 template <typename T>
 bool UltimateBoard<T>::game_is_over() {
     return is_win() || is_draw();
