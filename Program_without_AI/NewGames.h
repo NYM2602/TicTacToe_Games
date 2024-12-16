@@ -945,6 +945,9 @@ void UltimateRandomPlayer<T>::getmove(int& x, int& y) {
 
 //Game 9
 
+
+// Game 7
+
 template <typename T>
 class FourXFour_Board : public Board<T> {
 private:
@@ -965,6 +968,7 @@ class FourXFour_Player:public Player<T> {
 public:
     FourXFour_Player(string name ,T symbol);
     void getmove(int& x, int& y);
+
 };
 
 template <typename T>
@@ -1012,7 +1016,24 @@ void FourXFour_Board<T>::display_board() {
 }
 
 template <typename T>
-int FourXFour_Board<T>::count_three(T symbol) {
+bool FourXFour_Board<T>::update_board(int x, int y, T symbol){
+    for (auto&token:player_tokens[symbol=='X'?0:1]) {
+    int current_x = token.first;
+    int current_y = token.second;
+    if ((abs(current_x - x) + abs(current_y - y) == 1) && this->board[x][y] != symbol){
+    this->board[current_x][current_y] = '-';
+    this->board[x][y]=symbol;
+    this->n_moves++;
+    return true;}
+    else {
+        cout<<" Invalid move , Please try again ";
+    return false ;}
+    }
+
+}
+
+template <typename T>
+int FourXFour_Board<T>::count_three(T symbol){
     int count = 0;
     for (int i = 0; i < this->rows; i++) {      //check each three in a row and increment hte counter
         for (int j = 0;j<=this->columns-2; j++) {
@@ -1060,7 +1081,35 @@ bool FourXFour_Board<T>::is_draw() {
     return this->n_moves >= 32 && !is_win();
 }
 
+//================================================================
+//                      PLAYERS IMPLEMENTATION
+//================================================================
+template <typename T>
+FourXFour_Player<T>::FourXFour_Player(string name, T symbol) : Player<T>(name, symbol) {}
 
+template <typename T>
+void FourXFour_Player<T>::getmove(int& x, int& y) {
+    cout << "\nPlease enter your move x and y (0 to 3) separated by spaces: "
+    <<endl<<"you can move only one step vertically or horizontally"<<endl;
+    cin >> x >> y;
+
+}
+//================================================================
+//                     RANDOM  PLAYERS IMPLEMENTATION
+//================================================================
+
+template <typename T>
+FourXFour_Random_Player<T>::FourXFour_Random_Player(T symbol): RandomPlayer<T>(symbol) {
+    this->dimension = 4;
+    this->name = "Random Computer Player";
+    srand(static_cast<unsigned int>(time(0)));  // Seed the random number generator
+}
+
+template <typename T>
+void FourXFour_Random_Player<T>::getmove(int& x, int& y) {
+    x = rand() % 4;  // Random number between 0 and 3
+    y = rand() % 4;
+}
 
 
 #endif //NEWGAMES_H
