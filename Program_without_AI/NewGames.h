@@ -945,7 +945,120 @@ void UltimateRandomPlayer<T>::getmove(int& x, int& y) {
 
 //Game 9
 
+template <typename T>
+class FourXFour_Board : public Board<T> {
+private:
+    vector<pair<int, int>> player_tokens[2]; // Track each player's token positions
+    int player1_scr = 0;
+     int player2_scr = 0;
+public:
+    FourXFour_Board();
+    void display_board() override;
+    bool update_board(int x, int y, T symbol) override;
+    bool is_win() override;
+    bool is_draw() override;
+    bool game_is_over() override;
+    int count_three(T symbol); // additional func to count each three in a row, column or diagona
+};
+template <typename T>
+class FourXFour_Player:public Player<T> {
+public:
+    FourXFour_Player(string name ,T symbol);
+    void getmove(int& x, int& y);
+};
 
+template <typename T>
+class FourXFour_Random_Player : public RandomPlayer<T> {
+public:
+    FourXFour_Random_Player (T symbol);
+    void getmove(int &x, int &y) ;
+};
+//=====================================================================
+//                         BOARD IMPLEMENTATION
+//=====================================================================
+
+template <typename T>
+FourXFour_Board<T>::FourXFour_Board() {
+    this->rows=this->columns = 4; // size of board 4x4
+    this->board =new T*[4];
+    for (int i=0; i<4; i++) {
+        this->board[i] = new T[4];
+        for (int j=0;j<4; j++) {
+            this->board[i][j]= '-'; // make the board empty
+        }
+    }
+    player_tokens[0] = {{0, 1},{0, 3},{3, 0},{3, 2}}; //initialize tokens of player 1 (X)
+    player_tokens[1] = {{0, 0},{0, 2}, {3, 1},{3, 3}}; //initialize tokens of player 2 (O)
+    // placing the tokens on the board
+    for(const auto& pos:player_tokens[0]){ // tokens of player 1 (X)
+        this->board[pos.first][pos.second] = 'X';
+    }
+    for(const auto& pos : player_tokens[1]){ // tokens of player 2 (O)
+        this->board[pos.first][pos.second] = 'O';
+    }
+    this->n_moves  = 0;
+}
+template <typename T>
+void FourXFour_Board<T>::display_board() {
+    cout << "\nCurrent Board:\n";
+    for (int i = 0; i<4; i++) {
+        cout << "| ";
+        for (int j = 0;j<4; j++) {
+            cout << setw(2) << this->board[i][j] << " ";
+        }
+        cout << "|\n";
+    }
+    cout << endl;
+}
+
+template <typename T>
+int FourXFour_Board<T>::count_three(T symbol) {
+    int count = 0;
+    for (int i = 0; i < this->rows; i++) {      //check each three in a row and increment hte counter
+        for (int j = 0;j<=this->columns-2; j++) {
+            if (this->board[i][j] == symbol && this->board[i][j+1] == symbol && this->board[i][j+2] == symbol) {
+                count++;}
+        }
+    }
+    for (int i=0;i<=this->rows-2;i++){     //check each three in a column and increment hte counter
+        for(int j=0;j< this->columns;j++){
+            if (this->board[i][j]==symbol && this->board[i+1][j]==symbol && this->board[i+2][j]==symbol){
+                count++;
+            }
+        }
+    }
+    for (int i=0;i<=this->rows-2 ;i++){     //checks each three diagonally (left)
+        for(int j=0;j<=this->columns-2 ;j++){
+            if (this->board[i][j]==symbol && this->board[i+1][j+1]==symbol && this->board[i+2][j+2]==symbol){
+                count++;
+            }
+        }
+    }
+    for (int i=0;i<=this->rows-2 ;i++){     //checks each three diagonally (right)
+        for(int j=0;j<=this->columns-2 ;j++){
+            if (this->board[i][j]==symbol && this->board[i+1][j-1]==symbol && this->board[i+2][j-2]==symbol){
+                count++;
+            }
+        }
+    }
+    return count;}
+
+template <typename T>  //check the winner
+bool FourXFour_Board<T>::is_win() {
+        player1_scr=count_three('X');
+        player2_scr=count_three('O');
+    return (player1_scr >player2_scr)||(player2_scr>player1_scr);
+}
+
+template <typename T>
+bool FourXFour_Board<T>::game_is_over() {
+    return is_win() || is_draw();
+}
+
+template <typename T>
+bool FourXFour_Board<T>::is_draw() {
+    return this->n_moves >= 32 && !is_win();
+}
 
 
 
