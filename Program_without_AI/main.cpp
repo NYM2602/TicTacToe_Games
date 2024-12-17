@@ -1,13 +1,22 @@
 /*
-Foldername: A2_Task2345_AllB_20230716_S26_20230567_S26_20230449.zip 
+Foldername: A2_Task23_AllB_20230716_S26_20230567_S26_20230449.zip 
 Purpose: This program contains 8 board games to play
-Authors:  Aseel Mohamed             Section: All B      ID: 20230716
+Authors:  Aseel Mohamed Hatem       Section: All B      ID: 20230716
           Mariam Mohamed            Section: S26        ID: 20230567
           Noura Yasser Mohamed      Section: S26        ID: 20230449
 
 Date Created: 28/11/2024
 Program Description:
---TBM--
+This program allows the user to play 8 different Tic-Tac-Toe games
+1) Pyramid Tic-Tac-Toe
+2) Four in a row
+3) 5x5 Tic-Tac-Toe
+4) Word Tic-Tac-Toe
+5) Numerical Tic-Tac-Toe
+6) Misere (Inverse) Tic-Tac-Toe
+7) Ultimate Tic-Tac-Toe
+8) SUS
+
 */
 
 
@@ -404,7 +413,7 @@ int main() {
                 p1_name = ask_for_name("the first player");
             }
             
-            p1_smbl = ask_for_symbol("Please enter the symbol of the first player (X or O): ", 1);
+            p1_smbl = ask_for_symbol("Please enter the symbol of the first player (X or O): ", 7);
             
             
             //set up player 2
